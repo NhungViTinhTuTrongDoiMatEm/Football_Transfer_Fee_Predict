@@ -1,0 +1,24 @@
+# Secrets & Configurations
+.env
+
+# Raw local data cache (extremely large JSON files cào được)
+data/
+pipeline/data/
+
+# Python compiled files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+venv/
+.venv/
+
+# dbt logs and targets
+dbt_project/target/
+dbt_project/logs/
+dbt_project/dbt_packages/
+
+# OS specific files
+.DS_Store
+Thumbs.db

@@ -1,0 +1,61 @@
+version: 2
+
+models:
+  - name: dim_leagues
+    description: "Bảng chiều chứa thông tin các giải đấu bóng đá."
+    columns:
+      - name: league_id
+        description: "Mã định danh duy nhất của giải đấu."
+        tests:
+          - unique
+          - not_null
+
+  - name: dim_teams
+    description: "Bảng chiều chứa thông tin các câu lạc bộ bóng đá."
+    columns:
+      - name: team_id
+        description: "Mã định danh duy nhất của câu lạc bộ."
+        tests:
+          - unique
+          - not_null
+
+  - name: dim_players
+    description: "Bảng chiều chứa thông tin cá nhân của cầu thủ."
+    columns:
+      - name: player_id
+        description: "Mã định danh duy nhất của cầu thủ."
+        tests:
+          - unique
+          - not_null
+
+  - name: fact_player_statistics
+    description: "Bảng sự kiện chứa các thông số thống kê thi đấu của cầu thủ theo từng đội bóng, giải đấu và mùa giải."
+    columns:
+      - name: player_id
+        description: "Mã liên kết tới bảng chiều cầu thủ."
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_players')
+              field: player_id
+
+      - name: team_id
+        description: "Mã liên kết tới bảng chiều câu lạc bộ."
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_teams')
+              field: team_id
+
+      - name: league_id
+        description: "Mã liên kết tới bảng chiều giải đấu."
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_leagues')
+              field: league_id
+
+      - name: season
+        description: "Năm diễn ra mùa giải."
+        tests:
+          - not_null

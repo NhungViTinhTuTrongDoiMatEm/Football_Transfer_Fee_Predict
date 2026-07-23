@@ -1,0 +1,10 @@
+version: 2
+
+sources:
+  - name: raw_football
+    schema: public
+    tables:
+      - name: staging_leagues_raw
+      - name: staging_teams_raw
+      - name: staging_players_raw
+      - name: staging_transfers_raw

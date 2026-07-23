@@ -1,0 +1,26 @@
+name: 'vua_bong_da_dbt'
+version: '1.0.0'
+config-version: 2
+
+# Profiles.yml connection settings name
+profile: 'vua_bong_da'
+
+# Directory configuration
+model-paths: ["models"]
+analysis-paths: ["analyses"]
+test-paths: ["tests"]
+seed-paths: ["seeds"]
+macro-paths: ["macros"]
+snapshot-paths: ["snapshots"]
+
+clean-targets:
+  - "target"
+  - "dbt_packages"
+
+# Models materialization settings
+models:
+  vua_bong_da_dbt:
+    staging:
+      +materialized: view
+    marts:
+      +materialized: table

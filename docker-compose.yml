@@ -1,0 +1,74 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: football_postgres
+    restart: always
+    environment:
+      POSTGRES_DB: ${DB_NAME:-football_db}
+      POSTGRES_USER: ${DB_USER:-football_user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-football_pass}
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-football_user} -d ${DB_NAME:-football_db}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: football_pgadmin
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-admin@admin.com}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin}
+    ports:
+      - "8080:80"
+    depends_on:
+      - db
+
+  pipeline:
+    build:
+      context: ./pipeline
+    container_name: football_pipeline
+    environment:
+      API_KEY: ${API_KEY}
+      API_URL: ${API_URL:-https://v3.football.api-sports.io}
+      DB_HOST: ${DB_HOST:-db}
+      DB_PORT: ${DB_PORT:-5432}
+      DB_NAME: ${DB_NAME:-football_db}
+      DB_USER: ${DB_USER:-football_user}
+      DB_PASSWORD: ${DB_PASSWORD:-football_pass}
+    volumes:
+      - ./data:/app/data
+      - ./pipeline:/app
+    depends_on:
+      db:
+        condition: service_healthy
+
+  dbt:
+    image: ghcr.io/dbt-labs/dbt-postgres:1.7.3
+    container_name: football_dbt
+    environment:
+      DBT_PROFILES_DIR: /usr/app/dbt
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: ${DB_NAME:-football_db}
+      DB_USER: ${DB_USER:-football_user}
+      DB_PASSWORD: ${DB_PASSWORD:-football_pass}
+    volumes:
+      - ./dbt_project:/usr/app/dbt
+    working_dir: /usr/app/dbt
+    profiles:
+      - dbt-only
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
