@@ -47,7 +47,7 @@ def preprocess_features(df):
     df['tackles_per_90'] = (df['tackles_total'] / minutes) * 90
 
     # 2. CỜ ĐÁNH DẤU VÀ HỆ SỐ TRỌNG SỐ CHO NĂM WORLD CUP (2022, 2026, League ID = 1)
-    df['is_world_cup'] = df['stats_league_id'].apply(lambda x: 1 if x == 1 else 0)
+    # df['is_world_cup'] đã được tải trực tiếp từ view cơ sở dữ liệu
     df['is_wc_year'] = df['stats_season'].apply(lambda x: 1 if x in [2022, 2026] else 0)
 
     return df
