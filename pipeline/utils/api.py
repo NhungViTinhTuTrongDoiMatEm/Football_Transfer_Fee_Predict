@@ -3,6 +3,7 @@ import json
 import requests
 import time
 from pathlib import Path
+from datetime import datetime, timedelta
 
 API_KEY = os.getenv("API_KEY")
 API_URL = os.getenv("API_URL", "https://v3.football.api-sports.io").rstrip("/")
@@ -114,5 +115,51 @@ def fetch_transfers(team_id, force_refresh=False):
     data = fetch_from_api("transfers", {"team": team_id})
     save_json(data, cache_file)
     print("Đợi 2 giây để tránh bị chặn giới hạn tốc độ gọi API...")
+    time.sleep(2)
+    return data
+
+def fetch_recent_fixtures(league_id, season, days=7, force_refresh=False):
+    cache_file = Path("data/raw") / "fixtures" / f"league_{league_id}_season_{season}_recent.json"
+    cache_file.parent.mkdir(parents=True, exist_ok=True)
+    has_api_key = API_KEY and API_KEY != "your_api_key_here"
+    
+    today_str = datetime.now().strftime("%Y-%m-%d")
+    from_date_str = (datetime.now() - timedelta(days=days)).strftime("%Y-%m-%d")
+    
+    if (not has_api_key or not force_refresh) and cache_file.exists():
+        print(f"Đọc danh sách trận đấu gần đây từ local cache: {cache_file}")
+        with open(cache_file, "r", encoding="utf-8") as f:
+            return json.load(f)
+            
+    if not has_api_key:
+        raise ValueError("Không có API Key và không có file cache cho fixtures.")
+        
+    params = {
+        "league": league_id,
+        "season": season,
+        "from": from_date_str,
+        "to": today_str
+    }
+    data = fetch_from_api("fixtures", params)
+    save_json(data, cache_file)
+    print("Đợi 2 giây sau khi tải danh sách trận đấu...")
+    time.sleep(2)
+    return data
+
+def fetch_fixture_player_stats(fixture_id, force_refresh=False):
+    cache_file = Path("data/raw") / "fixture_players" / f"fixture_{fixture_id}.json"
+    cache_file.parent.mkdir(parents=True, exist_ok=True)
+    has_api_key = API_KEY and API_KEY != "your_api_key_here"
+    
+    if (not has_api_key or not force_refresh) and cache_file.exists():
+        with open(cache_file, "r", encoding="utf-8") as f:
+            return json.load(f)
+            
+    if not has_api_key:
+        raise ValueError(f"Không có API Key và không có file cache cho trận {fixture_id}.")
+        
+    data = fetch_from_api("fixtures/players", {"fixture": fixture_id})
+    save_json(data, cache_file)
+    print(f"Đã tải chi tiết cầu thủ trận {fixture_id}. Đợi 2 giây...")
     time.sleep(2)
     return data

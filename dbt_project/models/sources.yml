@@ -8,3 +8,4 @@ sources:
       - name: staging_teams_raw
       - name: staging_players_raw
       - name: staging_transfers_raw
+      - name: staging_fixture_players_raw

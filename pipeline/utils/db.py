@@ -116,3 +116,22 @@ def save_transfers(conn, data):
             )
         conn.commit()
     return len(responses)
+
+def save_fixture_players(conn, fixture_id, league_id, season, data):
+    responses = data.get("response", [])
+    if not responses:
+        return False
+    with conn.cursor() as cur:
+        cur.execute(
+            """
+            INSERT INTO staging_fixture_players_raw (fixture_id, league_id, season, data_raw)
+            VALUES (%s, %s, %s, %s)
+            ON CONFLICT (fixture_id) DO UPDATE SET 
+                league_id = EXCLUDED.league_id,
+                season = EXCLUDED.season,
+                data_raw = EXCLUDED.data_raw;
+            """,
+            (fixture_id, league_id, season, Json(data))
+        )
+        conn.commit()
+    return True

@@ -41,3 +41,13 @@ CREATE TABLE IF NOT EXISTS staging_transfers_raw (
 );
 
 CREATE INDEX IF NOT EXISTS idx_staging_transfers_raw_data ON staging_transfers_raw USING gin (data_raw);
+
+CREATE TABLE IF NOT EXISTS staging_fixture_players_raw (
+    fixture_id INT PRIMARY KEY,
+    league_id INT,
+    season INT,
+    data_raw JSONB NOT NULL,
+    extracted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_staging_fixture_players_raw_data ON staging_fixture_players_raw USING gin (data_raw);
