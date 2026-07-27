@@ -47,6 +47,9 @@ services:
     volumes:
       - ./data:/app/data
       - ./pipeline:/app
+      - ./dbt_project:/app/dbt_project
+      - ./ml_predictor:/app/ml_predictor
+    command: tail -f /dev/null
     depends_on:
       db:
         condition: service_healthy
@@ -69,6 +72,27 @@ services:
     depends_on:
       db:
         condition: service_healthy
+
+  airflow:
+    image: apache/airflow:2.7.3-python3.10
+    container_name: football_airflow
+    restart: always
+    user: "50000:0"
+    environment:
+      - AIRFLOW__CORE__EXECUTOR=SequentialExecutor
+      - AIRFLOW__CORE__SQL_ALCHEMY_CONN=sqlite:////opt/airflow/airflow.db
+      - AIRFLOW__CORE__LOAD_EXAMPLES=False
+      - AIRFLOW__DATABASE__LOAD_DEFAULT_CONNECTIONS=False
+    volumes:
+      - ./airflow/dags:/opt/airflow/dags
+      - ./airflow/logs:/opt/airflow/logs
+      - ./airflow/config:/opt/airflow/config
+      - /var/run/docker.sock:/var/run/docker.sock
+    ports:
+      - "8085:8080"
+    command: standalone
+    depends_on:
+      - pipeline
 
 volumes:
   postgres_data:

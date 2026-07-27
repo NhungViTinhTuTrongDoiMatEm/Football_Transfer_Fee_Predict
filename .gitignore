@@ -22,3 +22,9 @@ dbt_project/dbt_packages/
 # OS specific files
 .DS_Store
 Thumbs.db
+
+# Airflow temporary files and logs
+airflow/logs/
+airflow/airflow.db
+airflow/config/
+*.log
