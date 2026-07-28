@@ -31,4 +31,5 @@ SELECT DISTINCT ON (team_id)
     code,
     logo
 FROM unioned_teams
+WHERE team_id IS NOT NULL
 ORDER BY team_id, code NULLS LAST

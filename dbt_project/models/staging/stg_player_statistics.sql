@@ -35,3 +35,4 @@ SELECT DISTINCT ON (
     extracted_at
 FROM {{ source('raw_football', 'staging_players_raw') }}
 WHERE data_raw->'statistics'->0 IS NOT NULL
+  AND data_raw->'statistics'->0->'team'->>'id' IS NOT NULL

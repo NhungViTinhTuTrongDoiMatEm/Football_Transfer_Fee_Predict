@@ -27,7 +27,7 @@ def run_command_in_pipeline(command, workdir=None):
         raise Exception(f"Command '{command}' failed with exit code {exec_log.exit_code}")
 
 def run_weekly_scrape():
-    run_command_in_pipeline('python main.py --weekly', workdir='/app')
+    run_command_in_pipeline('python weekly.py', workdir='/app')
 
 def run_dbt_transform():
     run_command_in_pipeline('dbt run --profiles-dir /app/dbt_project', workdir='/app/dbt_project')
