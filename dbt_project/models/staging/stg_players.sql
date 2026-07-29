@@ -10,3 +10,4 @@ SELECT DISTINCT ON ((data_raw->'player'->>'id')::INT)
     data_raw->'player'->>'photo' AS photo,
     extracted_at
 FROM {{ source('raw_football', 'staging_players_raw') }}
+WHERE NOT (data_raw->'player'->>'name' = 'K. Mbappé' AND (data_raw->'player'->>'id')::INT = 1100)

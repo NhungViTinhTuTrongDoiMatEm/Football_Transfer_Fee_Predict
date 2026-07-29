@@ -36,3 +36,4 @@ SELECT DISTINCT ON (
 FROM {{ source('raw_football', 'staging_players_raw') }}
 WHERE data_raw->'statistics'->0 IS NOT NULL
   AND data_raw->'statistics'->0->'team'->>'id' IS NOT NULL
+  AND NOT (data_raw->'player'->>'name' = 'K. Mbappé' AND (data_raw->'player'->>'id')::INT = 1100)

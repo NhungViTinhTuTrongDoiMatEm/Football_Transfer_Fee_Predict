@@ -204,10 +204,10 @@ def predict_value(player_id: int, season: int):
     X_input = pd.concat([X_num, X_cat], axis=1)
     
     # Đảm bảo đầy đủ các cột đặc trưng một-nóng (One-Hot Columns) như lúc train
-    for col in feature_names:
-        if col not in X_input.columns:
-            X_input[col] = 0
-            
+    missing_cols = {col: 0 for col in feature_names if col not in X_input.columns}
+    if missing_cols:
+        X_input = pd.concat([X_input, pd.DataFrame([missing_cols], index=X_input.index)], axis=1)
+        
     X_input = X_input[feature_names]
     
     pred_raw = model.predict(X_input)[0]
