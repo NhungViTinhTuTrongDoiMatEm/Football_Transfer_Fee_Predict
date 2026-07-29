@@ -94,5 +94,26 @@ services:
     depends_on:
       - pipeline
 
+  dashboard:
+    image: python:3.10-slim
+    container_name: football_dashboard
+    restart: always
+    environment:
+      DB_HOST: ${DB_HOST:-db}
+      DB_PORT: ${DB_PORT:-5432}
+      DB_NAME: ${DB_NAME:-football_db}
+      DB_USER: ${DB_USER:-football_user}
+      DB_PASSWORD: ${DB_PASSWORD:-football_pass}
+    volumes:
+      - ./dashboard:/app
+      - ./ml_predictor:/app/ml_predictor
+    working_dir: /app
+    ports:
+      - "8500:8500"
+    command: bash -c "pip install -r requirements.txt && uvicorn app:app --host 0.0.0.0 --port 8500 --reload"
+    depends_on:
+      db:
+        condition: service_healthy
+
 volumes:
   postgres_data:

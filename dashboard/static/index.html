@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vua Bóng Đá - AI Player Analytics</title>
+    <!-- Google Font: Outfit -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="background-glows">
+        <div class="glow glow-1"></div>
+        <div class="glow glow-2"></div>
+        <div class="glow glow-3"></div>
+    </div>
+
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="logo-area">
+                <i class="fa-solid fa-chart-line-up AI-logo-icon"></i>
+                <h1>VUA BÓNG ĐÁ <span class="accent-text">AI</span></h1>
+            </div>
+            <p class="subtitle">Hệ thống Phân tích Chỉ số Cầu thủ & Dự báo Giá trị chuyển nhượng bằng Học máy</p>
+        </header>
+
+        <!-- Search Bar Area -->
+        <section class="search-section">
+            <div class="search-box-wrapper">
+                <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                <input type="text" id="player-search-input" placeholder="Nhập tên cầu thủ để tìm kiếm (ví dụ: Haaland, Kane, Messi...)" autocomplete="off">
+                <div class="loading-spinner" id="search-spinner" style="display: none;">
+                    <i class="fa-solid fa-circle-notch fa-spin"></i>
+                </div>
+            </div>
+            <!-- Search Results Dropdown -->
+            <div class="search-results-dropdown" id="search-results" style="display: none;">
+                <!-- Dữ liệu kết quả render ở đây -->
+            </div>
+        </section>
+
+        <!-- Welcome Banner (Hiển thị khi chưa chọn cầu thủ) -->
+        <section class="welcome-banner" id="welcome-panel">
+            <div class="welcome-icon">
+                <i class="fa-solid fa-futbol fa-bounce"></i>
+            </div>
+            <h2>Sẵn sàng phân tích dữ liệu chuyên môn</h2>
+            <p>Tìm kiếm tên cầu thủ ở thanh tra cứu phía trên để phân tích chỉ số thi đấu qua các mùa giải và dự toán giá trị chuyển nhượng bằng mô hình Học máy AI.</p>
+        </section>
+
+        <!-- Main Content Panel (Hiển thị khi chọn cầu thủ) -->
+        <main class="main-dashboard" id="dashboard-panel" style="display: none;">
+            
+            <!-- Left Side: Profile & AI Market Value -->
+            <div class="dashboard-left">
+                <!-- Player Profile Card -->
+                <div class="profile-card glass-panel">
+                    <div class="profile-avatar-wrapper">
+                        <img src="" id="player-photo" alt="Player Photo" class="player-photo-img">
+                        <div class="player-age-badge" id="player-age">--</div>
+                    </div>
+                    <h2 class="player-name" id="player-name">--</h2>
+                    <div class="profile-details">
+                        <div class="detail-item">
+                            <span class="label">Quốc tịch</span>
+                            <span class="value" id="player-nation">--</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="label">CLB hiện tại</span>
+                            <div class="club-info">
+                                <img src="" id="player-club-logo" alt="Club Logo" class="club-logo-img">
+                                <span class="value" id="player-club-name">--</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- AI Market Value Prediction Card -->
+                <div class="ai-value-card glass-panel prediction-glowing">
+                    <div class="ai-header">
+                        <div class="ai-badge">
+                            <i class="fa-solid fa-brain"></i> AI ESTIMATOR
+                        </div>
+                        <span class="wc-boost-badge" id="wc-badge" style="display: none;">World Cup Boost</span>
+                    </div>
+                    <h3>Giá trị chuyển nhượng dự kiến</h3>
+                    <div class="value-display-wrapper">
+                        <div class="value-loading" id="value-loader" style="display: none;">
+                            <i class="fa-solid fa-circle-notch fa-spin"></i> Đang tính toán...
+                        </div>
+                        <div class="value-amount" id="predicted-value">€--M</div>
+                    </div>
+                    <p class="value-desc">Tính toán dựa trên mô hình Gradient Boosting Regressor tích hợp chỉ số thi đấu Per-90 và hệ số tác động World Cup.</p>
+                </div>
+            </div>
+
+            <!-- Right Side: Seasons Selector & Stats -->
+            <div class="dashboard-right">
+                <!-- Season Filter Navigation -->
+                <div class="season-filter-bar glass-panel">
+                    <h3>Chọn mùa giải phân tích:</h3>
+                    <div class="season-tabs" id="season-tabs-container">
+                        <!-- Các tab mùa giải sẽ render ở đây -->
+                    </div>
+                </div>
+
+                <!-- Stats Grid Container -->
+                <div class="stats-container">
+                    
+                    <!-- Stats Card: Match Appearances -->
+                    <div class="stat-card glass-panel">
+                        <div class="stat-header">
+                            <i class="fa-solid fa-shirt icon-appearances"></i>
+                            <h4>Trận đấu & Phút</h4>
+                        </div>
+                        <div class="stat-main-value" id="val-matches">--</div>
+                        <div class="stat-sub-details">
+                            <div class="sub-row"><span>Đá chính</span><strong id="val-lineups">--</strong></div>
+                            <div class="sub-row"><span>Số phút thi đấu</span><strong id="val-minutes">--</strong></div>
+                        </div>
+                    </div>
+
+                    <!-- Stats Card: Rating -->
+                    <div class="stat-card glass-panel highlight-stat">
+                        <div class="stat-header">
+                            <i class="fa-solid fa-star icon-rating"></i>
+                            <h4>Điểm đánh giá (Rating)</h4>
+                        </div>
+                        <div class="stat-main-value rating-value" id="val-rating">--</div>
+                        <p class="stat-footer-text">Điểm trung bình trọng số cả mùa</p>
+                    </div>
+
+                    <!-- Stats Card: Goals & Assists -->
+                    <div class="stat-card glass-panel">
+                        <div class="stat-header">
+                            <i class="fa-solid fa-circle-check icon-goals"></i>
+                            <h4>Bàn thắng & Kiến tạo</h4>
+                        </div>
+                        <div class="stat-main-value" id="val-goals">--</div>
+                        <div class="stat-sub-details">
+                            <div class="sub-row"><span>Kiến tạo</span><strong id="val-assists">--</strong></div>
+                            <div class="sub-row"><span>Đá phạt đền thành công</span><strong id="val-penalties">--</strong></div>
+                        </div>
+                    </div>
+
+                    <!-- Stats Card: Attack Stats -->
+                    <div class="stat-card glass-panel">
+                        <div class="stat-header">
+                            <i class="fa-solid fa-bullseye icon-shots"></i>
+                            <h4>Hiệu suất Dứt điểm</h4>
+                        </div>
+                        <div class="stat-sub-details">
+                            <div class="sub-row"><span>Tổng cú sút</span><strong id="val-shots-total">--</strong></div>
+                            <div class="sub-row"><span>Sút trúng đích</span><strong id="val-shots-on">--</strong></div>
+                            <div class="sub-row">
+                                <span>Tỷ lệ chính xác</span>
+                                <span class="progress-bar-wrapper">
+                                    <span class="progress-fill" id="fill-shots-accuracy" style="width: 0%;"></span>
+                                </span>
+                                <strong id="pct-shots-accuracy">--%</strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Stats Card: Passing Stats -->
+                    <div class="stat-card glass-panel">
+                        <div class="stat-header">
+                            <i class="fa-solid fa-arrows-spin icon-passes"></i>
+                            <h4>Chuyền bóng & Kiến tạo cơ hội</h4>
+                        </div>
+                        <div class="stat-sub-details">
+                            <div class="sub-row"><span>Tổng đường chuyền</span><strong id="val-passes-total">--</strong></div>
+                            <div class="sub-row"><span>Đường chuyền mở cơ hội (Key)</span><strong id="val-passes-key">--</strong></div>
+                        </div>
+                    </div>
+
+                    <!-- Stats Card: Defending Stats -->
+                    <div class="stat-card glass-panel">
+                        <div class="stat-header">
+                            <i class="fa-solid fa-shield-halved icon-tackles"></i>
+                            <h4>Phòng thủ & Thu hồi bóng</h4>
+                        </div>
+                        <div class="stat-sub-details">
+                            <div class="sub-row"><span>Tackle bóng thành công</span><strong id="val-tackles-total">--</strong></div>
+                            <div class="sub-row"><span>Đánh chặn cướp bóng</span><strong id="val-tackles-interceptions">--</strong></div>
+                        </div>
+                    </div>
+
+                    <!-- Stats Card: Duels & Dribbles -->
+                    <div class="stat-card glass-panel">
+                        <div class="stat-header">
+                            <i class="fa-solid fa-person-running icon-dribbles"></i>
+                            <h4>Tranh chấp & Rê dắt</h4>
+                        </div>
+                        <div class="stat-sub-details">
+                            <div class="sub-row"><span>Tranh chấp thắng</span><strong id="val-duels-won">/--</strong></div>
+                            <div class="sub-row"><span>Rê bóng thành công</span><strong id="val-dribbles-success">/--</strong></div>
+                        </div>
+                    </div>
+
+                    <!-- Stats Card: Discipline & Fouls -->
+                    <div class="stat-card glass-panel">
+                        <div class="stat-header">
+                            <i class="fa-solid fa-triangle-exclamation icon-discipline"></i>
+                            <h4>Kỷ luật & Phạm lỗi</h4>
+                        </div>
+                        <div class="stat-sub-details">
+                            <div class="sub-row"><span>Phạm lỗi / Bị phạm lỗi</span><strong id="val-fouls">-- / --</strong></div>
+                            <div class="sub-row">
+                                <span>Thẻ phạt</span>
+                                <div class="cards-indicator">
+                                    <span class="yellow-card-badge" id="val-cards-yellow">0</span>
+                                    <span class="red-card-badge" id="val-cards-red">0</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </main>
+    </div>
+    
+    <script src="/static/app.js"></script>
+</body>
+</html>
