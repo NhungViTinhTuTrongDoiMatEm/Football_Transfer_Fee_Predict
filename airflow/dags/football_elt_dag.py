@@ -6,7 +6,7 @@ import docker
 default_args = {
     'owner': 'football_admin',
     'depends_on_past': False,
-    'start_date': datetime(2026, 1, 1),
+    'start_date': datetime(2026, 7, 27),
     'email_on_failure': False,
     'email_on_retry': False,
     'retries': 1,
@@ -40,7 +40,7 @@ with DAG(
     default_args=default_args,
     description='Pipeline cào trận lẻ hàng tuần, dbt transform và huấn luyện lại ML tự động',
     schedule_interval='0 3 * * 1', # Chạy vào 3:00 sáng Thứ Hai hàng tuần
-    catchup=False,
+    catchup=True,
 ) as dag:
 
     task_scrape = PythonOperator(
