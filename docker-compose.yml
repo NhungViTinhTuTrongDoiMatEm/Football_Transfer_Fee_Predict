@@ -80,13 +80,14 @@ services:
     user: "50000:0"
     environment:
       - AIRFLOW__CORE__EXECUTOR=SequentialExecutor
-      - AIRFLOW__CORE__SQL_ALCHEMY_CONN=sqlite:////opt/airflow/airflow.db
+      - AIRFLOW__CORE__SQL_ALCHEMY_CONN=sqlite:////opt/airflow/data/airflow.db
       - AIRFLOW__CORE__LOAD_EXAMPLES=False
       - AIRFLOW__DATABASE__LOAD_DEFAULT_CONNECTIONS=False
     volumes:
       - ./airflow/dags:/opt/airflow/dags
       - ./airflow/logs:/opt/airflow/logs
       - ./airflow/config:/opt/airflow/config
+      - ./airflow/data:/opt/airflow/data
       - /var/run/docker.sock:/var/run/docker.sock
     ports:
       - "8085:8080"
