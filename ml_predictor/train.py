@@ -68,9 +68,23 @@ def train_model():
     
     df['target_transfer_fee_m_eur'] = pd.to_numeric(df['target_transfer_fee_m_eur'], errors='coerce').fillna(0)
     
-    # Biến đổi Logarit cho giá trị giao dịch
-    y = df['target_transfer_fee_m_eur']
-    y_log = np.log1p(y)
+    # 1. ÁNH XẠ VỊ TRÍ CẦU THỦ THÀNH 4 NHÓM CHÍNH
+    def get_pos_group(pos):
+        if pos in ['Attacker', 'Forward']:
+            return 'Attacker'
+        elif pos == 'Midfielder':
+            return 'Midfielder'
+        elif pos == 'Defender':
+            return 'Defender'
+        elif pos == 'Goalkeeper':
+            return 'Goalkeeper'
+        return 'Attacker' # Mặc định dự phòng
+        
+    df['pos_group'] = df['position'].apply(get_pos_group)
+    
+    position_groups = ['Attacker', 'Midfielder', 'Defender', 'Goalkeeper']
+    models_dict = {}
+    feature_names_dict = {}
     
     feature_cols = [
         'age', 'games_rating', 'is_world_cup', 'is_wc_year',
@@ -78,67 +92,82 @@ def train_model():
         'key_passes_per_90', 'dribbles_per_90', 'tackles_per_90',
         'games_appearances', 'games_minutes', 'goals_total', 'goals_assists'
     ]
-    
-    categorical_features = ['position', 'nationality']
-    
-    X_cat = pd.get_dummies(df[categorical_features], drop_first=True)
-    X_num = df[feature_cols]
-    
-    X = pd.concat([X_num, X_cat], axis=1)
-    feature_names = X.columns.tolist()
-    
-    X_train, X_test, y_train_log, y_test_log, y_train_orig, y_test_orig = train_test_split(
-        X, y_log, y, test_size=0.2, random_state=42
-    )
-    print(f"Kich thuoc tap Train: {len(X_train)} mau | Tap Test: {len(X_test)} mau.")
-    
-    print("\n--- 2. HUAN LUYEN MO HINH GRADIENT BOOSTING VOI CHỈ SỐ WORLD CUP & PER-90 ---")
-    model = GradientBoostingRegressor(
-        n_estimators=250,
-        learning_rate=0.03,
-        max_depth=5,
-        subsample=0.8,
-        random_state=42
-    )
-    
-    model.fit(X_train, y_train_log)
-    
-    y_pred_log = model.predict(X_test)
-    y_pred = np.expm1(y_pred_log)
-    y_pred = np.maximum(y_pred, 0)
-    
-    mae = mean_absolute_error(y_test_orig, y_pred)
-    rmse = np.sqrt(mean_squared_error(y_test_orig, y_pred))
-    r2 = r2_score(y_test_orig, y_pred)
+    categorical_features = ['nationality']
     
     print("\n==============================================")
-    print("      KET QUA DANH GIA MO HINH (METRICS)     ")
-    print("==============================================")
-    print(f" * Sai so tuyet doi trung binh (MAE) : +/- {mae:.2f} Trieu Euro")
-    print(f" * Can sai so binh phuong (RMSE)     : {rmse:.2f} Trieu Euro")
-    print(f" * He so xac dinh (R2 Score)         : {r2:.4f}")
+    print("    HUAN LUYEN CHI TIET THEO NHOM VI TRI      ")
     print("==============================================")
     
-    importances = model.feature_importances_
-    indices = np.argsort(importances)[::-1][:10]
-    
-    print("\nTOP 10 CHI SO ANH HUONG LON NHAT DEN GIA TRI CAU THU:")
-    for rank, idx in enumerate(indices, 1):
-        print(f" {rank:2d}. {feature_names[idx]:<25} : {importances[idx]*100:.2f}%")
+    for group in position_groups:
+        df_g = df[df['pos_group'] == group].copy()
+        if len(df_g) < 10:
+            print(f"\nBo qua nhom {group} do co qua it du lieu ({len(df_g)} mau).")
+            continue
+            
+        print(f"\n>>> HUAN LUYEN NHOM: {group.upper()} ({len(df_g)} mau) <<<")
+        
+        y_g = df_g['target_transfer_fee_m_eur']
+        y_g_log = np.log1p(y_g)
+        
+        X_g_cat = pd.get_dummies(df_g[categorical_features], drop_first=True)
+        X_g_num = df_g[feature_cols]
+        X_g = pd.concat([X_g_num, X_g_cat], axis=1)
+        
+        feature_names = X_g.columns.tolist()
+        feature_names_dict[group] = feature_names
+        
+        X_train, X_test, y_train_log, y_test_log, y_train_orig, y_test_orig = train_test_split(
+            X_g, y_g_log, y_g, test_size=0.2, random_state=42
+        )
+        
+        # Điều chỉnh siêu tham số (Hyperparameters) phù hợp với kích thước mẫu từng vị trí
+        n_est = 150 if group == 'Goalkeeper' else 250
+        depth = 4 if group == 'Goalkeeper' else 5
+        
+        model = GradientBoostingRegressor(
+            n_estimators=n_est,
+            learning_rate=0.03,
+            max_depth=depth,
+            subsample=0.8,
+            random_state=42
+        )
+        
+        model.fit(X_train, y_train_log)
+        
+        y_pred_log = model.predict(X_test)
+        y_pred = np.expm1(y_pred_log)
+        y_pred = np.maximum(y_pred, 0)
+        
+        mae = mean_absolute_error(y_test_orig, y_pred)
+        rmse = np.sqrt(mean_squared_error(y_test_orig, y_pred))
+        r2 = r2_score(y_test_orig, y_pred)
+        
+        print(f" * Sai so tuyet doi trung binh (MAE) : +/- {mae:.2f} Trieu Euro")
+        print(f" * Can sai so binh phuong (RMSE)     : {rmse:.2f} Trieu Euro")
+        print(f" * He so xac dinh (R2 Score)         : {r2:.4f}")
+        
+        # Hiển thị độ quan trọng tính năng
+        importances = model.feature_importances_
+        indices = np.argsort(importances)[::-1][:5]
+        print(" TOP 5 CHỈ SỐ QUYẾT ĐỊNH GIÁ:")
+        for rank, idx in enumerate(indices, 1):
+            print(f"   {rank}. {feature_names[idx]:<25} : {importances[idx]*100:.2f}%")
+            
+        models_dict[group] = model
         
     model_dir = os.path.dirname(__file__)
     model_path = os.path.join(model_dir, "player_value_model.joblib")
     
     model_artifact = {
-        "model": model,
-        "feature_names": feature_names,
+        "models": models_dict,
+        "feature_names": feature_names_dict,
         "feature_cols": feature_cols,
         "categorical_features": categorical_features,
         "use_log": True
     }
     
     joblib.dump(model_artifact, model_path)
-    print(f"\nDa luu dong goi mo hinh thanh cong tai: {model_path}")
+    print(f"\nDa luu dong goi ca 4 mo hinh thanh cong tai: {model_path}")
 
 if __name__ == "__main__":
     train_model()

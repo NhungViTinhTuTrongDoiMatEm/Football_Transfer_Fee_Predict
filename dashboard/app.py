@@ -170,23 +170,46 @@ def predict_value(player_id: int, season: int):
         
     df = preprocess_input(df)
     
-    # Chuẩn bị dữ liệu đầu vào cho mô hình
-    model = model_artifact["model"]
-    feature_names = model_artifact["feature_names"]
+    # 1. ÁNH XẠ VỊ TRÍ CẦU THỦ THÀNH 4 NHÓM CHÍNH
+    wc_rows = df[df['stats_league_id'] == 1]
+    is_wc = False
+    wc_boost = 1.0
+    main_row = df.iloc[0].copy()
+    
+    player_position = main_row.get("position", "Attacker")
+    
+    def get_pos_group(pos):
+        if pos in ['Attacker', 'Forward']:
+            return 'Attacker'
+        elif pos == 'Midfielder':
+            return 'Midfielder'
+        elif pos == 'Defender':
+            return 'Defender'
+        elif pos == 'Goalkeeper':
+            return 'Goalkeeper'
+        return 'Attacker'
+        
+    mapped_position = get_pos_group(player_position)
+    
+    # 2. XÁC ĐỊNH MÔ HÌNH VÀ CÁC THAM SỐ PHÙ HỢP
+    if "models" in model_artifact:
+        model = model_artifact["models"].get(mapped_position)
+        feature_names = model_artifact["feature_names"].get(mapped_position)
+        if not model or not feature_names:
+            model = model_artifact["models"].get("Attacker")
+            feature_names = model_artifact["feature_names"].get("Attacker")
+    else:
+        model = model_artifact.get("model")
+        feature_names = model_artifact.get("feature_names")
+        
+    if not model or not feature_names:
+        raise HTTPException(status_code=500, detail="Mô hình dự đoán không khả dụng hoặc chưa được tải.")
+        
     feature_cols = model_artifact["feature_cols"]
     categorical_features = model_artifact["categorical_features"]
     use_log = model_artifact.get("use_log", False)
     
-    # Gom nhóm theo giải đấu và kiểm tra hiệu ứng World Cup
-    results = []
-    
-    # Kiểm tra nếu có thi đấu World Cup
-    wc_rows = df[df['stats_league_id'] == 1]
-    is_wc = False
-    wc_boost = 1.0
-    
-    main_row = df.iloc[0].copy()
-    
+    # 3. KIỂM TRA HIỆU ỨNG WORLD CUP
     if not wc_rows.empty:
         is_wc = True
         wc_row = wc_rows.iloc[0]
