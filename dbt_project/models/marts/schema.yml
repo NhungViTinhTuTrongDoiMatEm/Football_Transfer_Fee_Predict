@@ -59,3 +59,14 @@ models:
         description: "Năm diễn ra mùa giải."
         tests:
           - not_null
+
+  - name: quarantine_player_statistics
+    description: "Bảng cách ly (Quarantine Table) chứa các bản ghi bị lỗi logic số phút thi đấu của cầu thủ để phục vụ đối soát."
+    columns:
+      - name: player_id
+        description: "Mã định danh cầu thủ bị lỗi."
+      - name: games_appearances
+        description: "Số lần ra sân ghi nhận bị lỗi."
+      - name: games_minutes
+        description: "Số phút thi đấu ghi nhận bị lỗi (vượt quá số trận * 120 phút)."
+
