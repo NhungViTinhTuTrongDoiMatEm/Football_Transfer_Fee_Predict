@@ -87,3 +87,5 @@ SELECT
 FROM transfers_with_next_year tr
 JOIN {{ ref('dim_players') }} p ON tr.player_id = p.player_id
 JOIN seasonal_aggregated_stats s ON tr.player_id = s.player_id AND tr.target_stats_season = s.season
+WHERE s.games_rating > 0
+
