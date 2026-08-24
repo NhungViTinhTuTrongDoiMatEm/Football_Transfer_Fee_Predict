@@ -43,23 +43,23 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r pipeline/requirements.txt
 
-      - name: Bước 1: Chạy scraper cào dữ liệu mới (weekly.py)
+      - name: "Bước 1: Chạy scraper cào dữ liệu mới (weekly.py)"
         run: |
           python pipeline/weekly.py
 
-      - name: Bước 2: Chạy dbt chuyển đổi và tổng hợp dữ liệu (dbt run)
+      - name: "Bước 2: Chạy dbt chuyển đổi và tổng hợp dữ liệu (dbt run)"
         run: |
           dbt run --target prod --project-dir dbt_project --profiles-dir dbt_project
 
-      - name: Bước 3: Chạy dbt test kiểm thử chất lượng dữ liệu (dbt test)
+      - name: "Bước 3: Chạy dbt test kiểm thử chất lượng dữ liệu (dbt test)"
         run: |
           dbt test --target prod --project-dir dbt_project --profiles-dir dbt_project
 
-      - name: Bước 4: Huấn luyện lại mô hình AI (train.py)
+      - name: "Bước 4: Huấn luyện lại mô hình AI (train.py)"
         run: |
           python ml_predictor/train.py
 
-      - name: Bước 5: Đẩy File mô hình mới lên Git để tự động cập nhật Render
+      - name: "Bước 5: Đẩy File mô hình mới lên Git để tự động cập nhật Render"
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
