@@ -20,6 +20,7 @@ clean-targets:
 # Models materialization settings
 models:
   vua_bong_da_dbt:
+    +pre-hook: "SET statement_timeout = 600000"
     staging:
       +materialized: view
     marts:
