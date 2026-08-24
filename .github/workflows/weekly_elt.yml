@@ -3,7 +3,7 @@ name: Weekly ELT & AI Pipeline
 on:
   schedule:
     - cron: '0 3 * * 1' # Chạy vào 3:00 sáng UTC (10:00 sáng giờ VN) thứ Hai hàng tuần
-  workflow_dispatch: # Cho phép kích hoạt chạy thử thủ công từ giao diện GitHub Actions
+  workflow_dispatch: {} # Cho phép kích hoạt chạy thử thủ công từ giao diện GitHub Actions
 
 jobs:
   run-elt-pipeline:
