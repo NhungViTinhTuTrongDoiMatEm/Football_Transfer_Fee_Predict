@@ -1,0 +1,24 @@
+a1111111qq1qq1111source:
+  type: postgres
+  serviceName: postgres_test
+  serviceConnection:
+    config:
+      type: Postgres
+      username: football_user
+      authType:
+        password: football_pass
+      hostPort: db:5432
+      database: football_db
+  sourceConfig:
+    config:
+      type: DatabaseMetadata
+      dbtConfigSource:
+        dbtCatalogFilePath: /app/dbt_project/target/catalog.json
+        dbtManifestFilePath: /app/dbt_project/target/manifest.json
+
+sink:
+  type: metadata-rest
+  config:
+    openMetadataServerConnection:
+      hostPort: http://host.docker.internal:8585/api
+      authProvider: openmetadata

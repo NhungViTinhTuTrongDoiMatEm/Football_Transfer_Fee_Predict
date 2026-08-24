@@ -9,13 +9,17 @@ def get_db_connection():
     """
     for attempt in range(10):
         try:
-            return psycopg2.connect(
-                host=os.getenv("DB_HOST", "db"),
-                port=os.getenv("DB_PORT", "5432"),
-                database=os.getenv("DB_NAME", "football_db"),
-                user=os.getenv("DB_USER", "football_user"),
-                password=os.getenv("DB_PASSWORD", "football_pass")
-            )
+            sslmode = os.getenv("DB_SSLMODE")
+            conn_args = {
+                "host": os.getenv("DB_HOST", "db"),
+                "port": os.getenv("DB_PORT", "5432"),
+                "database": os.getenv("DB_NAME", "football_db"),
+                "user": os.getenv("DB_USER", "football_user"),
+                "password": os.getenv("DB_PASSWORD", "football_pass")
+            }
+            if sslmode:
+                conn_args["sslmode"] = sslmode
+            return psycopg2.connect(**conn_args)
         except psycopg2.OperationalError as e:
             if attempt == 9:
                 raise e

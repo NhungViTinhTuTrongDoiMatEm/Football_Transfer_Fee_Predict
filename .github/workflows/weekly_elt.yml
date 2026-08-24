@@ -1,0 +1,72 @@
+name: Weekly ELT & AI Pipeline
+
+on:
+  schedule:
+    - cron: '0 3 * * 1' # Chạy vào 3:00 sáng UTC (10:00 sáng giờ VN) thứ Hai hàng tuần
+  workflow_dispatch: # Cho phép kích hoạt chạy thử thủ công từ giao diện GitHub Actions
+
+jobs:
+  run-elt-pipeline:
+    runs-on: ubuntu-latest
+
+    env:
+      # Cấu hình API cào dữ liệu bóng đá
+      API_KEY: ${{ secrets.API_KEY }}
+      API_URL: https://v3.football.api-sports.io
+
+      # Cấu hình kết nối cơ sở dữ liệu Supabase (dành cho python scripts)
+      DB_HOST: aws-0-ap-northeast-2.pooler.supabase.com
+      DB_PORT: 6543
+      DB_NAME: postgres
+      DB_USER: postgres.kholsbroxuuibpidlzng
+      DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+      DB_SSLMODE: require
+
+      # Cấu hình môi trường dbt (truy xuất từ profiles.yml)
+      DB_HOST_PROD: aws-0-ap-northeast-2.pooler.supabase.com
+      DB_NAME_PROD: postgres
+      DB_USER_PROD: postgres.kholsbroxuuibpidlzng
+      DB_PASSWORD_PROD: ${{ secrets.DB_PASSWORD }}
+
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v4
+
+      - name: Cài đặt Python 3.10
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+          cache: 'pip'
+
+      - name: Cài đặt thư viện phụ thuộc
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r pipeline/requirements.txt
+
+      - name: Bước 1: Chạy scraper cào dữ liệu mới (weekly.py)
+        run: |
+          python pipeline/weekly.py
+
+      - name: Bước 2: Chạy dbt chuyển đổi và tổng hợp dữ liệu (dbt run)
+        run: |
+          dbt run --target prod --project-dir dbt_project --profiles-dir dbt_project
+
+      - name: Bước 3: Chạy dbt test kiểm thử chất lượng dữ liệu (dbt test)
+        run: |
+          dbt test --target prod --project-dir dbt_project --profiles-dir dbt_project
+
+      - name: Bước 4: Huấn luyện lại mô hình AI (train.py)
+        run: |
+          python ml_predictor/train.py
+
+      - name: Bước 5: Đẩy File mô hình mới lên Git để tự động cập nhật Render
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add ml_predictor/player_value_model.joblib
+          if git diff --staged --quiet; then
+            echo "Không có thay đổi mới trong mô hình AI."
+          else
+            git commit -m "Tự động huấn luyện và cập nhật mô hình AI [skip ci]"
+            git push
+          fi

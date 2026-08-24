@@ -9,4 +9,14 @@ vua_bong_da:
       user: "{{ env_var('DB_USER', 'football_user') }}"
       password: "{{ env_var('DB_PASSWORD', 'football_pass') }}"
       threads: 4
+    prod:
+      type: postgres
+      host: "{{ env_var('DB_HOST_PROD', 'aws-0-ap-northeast-2.pooler.supabase.com') }}"
+      port: 6543
+      dbname: "{{ env_var('DB_NAME_PROD', 'postgres') }}"
+      schema: public
+      user: "{{ env_var('DB_USER_PROD', 'postgres.kholsbroxuuibpidlzng') }}"
+      password: "{{ env_var('DB_PASSWORD_PROD', 'Kartrider8806') }}"
+      threads: 4
+      sslmode: require
   target: dev
