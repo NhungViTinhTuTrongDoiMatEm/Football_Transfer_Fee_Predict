@@ -15,6 +15,7 @@
   { "league_id": 39, "name": "Premier League", "season": 2023, "active": false },
   { "league_id": 39, "name": "Premier League", "season": 2024, "active": false },
   { "league_id": 39, "name": "Premier League", "season": 2025, "active": false },
+  { "league_id": 39, "name": "Premier League", "season": 2026, "active": true },
 
   { "league_id": 140, "name": "La Liga", "season": 2010, "active": false },
   { "league_id": 140, "name": "La Liga", "season": 2011, "active": false },
@@ -32,6 +33,7 @@
   { "league_id": 140, "name": "La Liga", "season": 2023, "active": false },
   { "league_id": 140, "name": "La Liga", "season": 2024, "active": false },
   { "league_id": 140, "name": "La Liga", "season": 2025, "active": false },
+  { "league_id": 140, "name": "La Liga", "season": 2026, "active": true },
 
   { "league_id": 135, "name": "Serie A", "season": 2010, "active": false },
   { "league_id": 135, "name": "Serie A", "season": 2011, "active": false },
@@ -49,6 +51,7 @@
   { "league_id": 135, "name": "Serie A", "season": 2023, "active": false },
   { "league_id": 135, "name": "Serie A", "season": 2024, "active": false },
   { "league_id": 135, "name": "Serie A", "season": 2025, "active": false },
+  { "league_id": 135, "name": "Serie A", "season": 2026, "active": true },
 
   { "league_id": 78, "name": "Bundesliga", "season": 2010, "active": false },
   { "league_id": 78, "name": "Bundesliga", "season": 2011, "active": false },
@@ -66,6 +69,7 @@
   { "league_id": 78, "name": "Bundesliga", "season": 2023, "active": false },
   { "league_id": 78, "name": "Bundesliga", "season": 2024, "active": false },
   { "league_id": 78, "name": "Bundesliga", "season": 2025, "active": false },
+  { "league_id": 78, "name": "Bundesliga", "season": 2026, "active": true },
 
   { "league_id": 61, "name": "Ligue 1", "season": 2010, "active": false },
   { "league_id": 61, "name": "Ligue 1", "season": 2011, "active": false },
@@ -83,6 +87,7 @@
   { "league_id": 61, "name": "Ligue 1", "season": 2023, "active": false },
   { "league_id": 61, "name": "Ligue 1", "season": 2024, "active": false },
   { "league_id": 61, "name": "Ligue 1", "season": 2025, "active": false },
+  { "league_id": 61, "name": "Ligue 1", "season": 2026, "active": true },
 
   { "league_id": 94, "name": "Primeira Liga", "season": 2010, "active": false },
   { "league_id": 94, "name": "Primeira Liga", "season": 2011, "active": false },
@@ -100,6 +105,7 @@
   { "league_id": 94, "name": "Primeira Liga", "season": 2023, "active": false },
   { "league_id": 94, "name": "Primeira Liga", "season": 2024, "active": false },
   { "league_id": 94, "name": "Primeira Liga", "season": 2025, "active": false },
+  { "league_id": 94, "name": "Primeira Liga", "season": 2026, "active": true },
 
   { "league_id": 88, "name": "Eredivisie", "season": 2010, "active": false },
   { "league_id": 88, "name": "Eredivisie", "season": 2011, "active": false },
@@ -117,6 +123,7 @@
   { "league_id": 88, "name": "Eredivisie", "season": 2023, "active": false },
   { "league_id": 88, "name": "Eredivisie", "season": 2024, "active": false },
   { "league_id": 88, "name": "Eredivisie", "season": 2025, "active": false },
+  { "league_id": 88, "name": "Eredivisie", "season": 2026, "active": true },
 
   { "league_id": 1, "name": "FIFA World Cup", "season": 2010, "active": false },
   { "league_id": 1, "name": "FIFA World Cup", "season": 2014, "active": false },
