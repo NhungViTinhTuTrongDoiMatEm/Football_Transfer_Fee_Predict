@@ -27,8 +27,11 @@ def get_db_engine():
 
 engine = get_db_engine()
 
-# Load model ML
-MODEL_PATH = "/app/ml_predictor/player_value_model.joblib"
+# Xác định thư mục gốc của file app.py
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+# Load model ML sử dụng đường dẫn tuyệt đối động
+MODEL_PATH = os.path.join(BASE_DIR, "..", "ml_predictor", "player_value_model.joblib")
 model_artifact = None
 
 if os.path.exists(MODEL_PATH):
@@ -252,8 +255,8 @@ def predict_value(player_id: int, season: int):
     }
 
 # Phục vụ Frontend
-app.mount("/static", StaticFiles(directory="static"), name="static")
+app.mount("/static", StaticFiles(directory=os.path.join(BASE_DIR, "static")), name="static")
 
 @app.get("/")
 def read_root():
-    return FileResponse("static/index.html")
+    return FileResponse(os.path.join(BASE_DIR, "static", "index.html"))
