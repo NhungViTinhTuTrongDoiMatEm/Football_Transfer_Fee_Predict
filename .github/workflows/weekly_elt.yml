@@ -8,6 +8,8 @@ on:
 jobs:
   run-elt-pipeline:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
 
     env:
       # Cấu hình API cào dữ liệu bóng đá
@@ -70,3 +72,4 @@ jobs:
             git commit -m "Tự động huấn luyện và cập nhật mô hình AI [skip ci]"
             git push
           fi
+
