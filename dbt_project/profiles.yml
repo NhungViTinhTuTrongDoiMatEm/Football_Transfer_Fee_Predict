@@ -11,11 +11,11 @@ vua_bong_da:
       threads: 4
     prod:
       type: postgres
-      host: "{{ env_var('DB_HOST_PROD', 'aws-0-ap-northeast-2.pooler.supabase.com') }}"
+      host: "{{ env_var('DB_HOST_PROD', 'aws-0-ap-southeast-2.pooler.supabase.com') }}"
       port: 6543
       dbname: "{{ env_var('DB_NAME_PROD', 'postgres') }}"
       schema: public
-      user: "{{ env_var('DB_USER_PROD', 'postgres.kholsbroxuuibpidlzng') }}"
+      user: "{{ env_var('DB_USER_PROD', 'postgres.zirrhcafovsekawnupbp') }}"
       password: "{{ env_var('DB_PASSWORD_PROD', 'Kartrider8806') }}"
       threads: 4
       sslmode: require

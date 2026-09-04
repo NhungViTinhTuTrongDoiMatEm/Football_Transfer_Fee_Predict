@@ -17,17 +17,17 @@ jobs:
       API_URL: https://v3.football.api-sports.io
 
       # Cấu hình kết nối cơ sở dữ liệu Supabase (dành cho python scripts)
-      DB_HOST: aws-0-ap-northeast-2.pooler.supabase.com
+      DB_HOST: aws-0-ap-southeast-2.pooler.supabase.com
       DB_PORT: 6543
       DB_NAME: postgres
-      DB_USER: postgres.kholsbroxuuibpidlzng
+      DB_USER: postgres.zirrhcafovsekawnupbp
       DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
       DB_SSLMODE: require
 
       # Cấu hình môi trường dbt (truy xuất từ profiles.yml)
-      DB_HOST_PROD: aws-0-ap-northeast-2.pooler.supabase.com
+      DB_HOST_PROD: aws-0-ap-southeast-2.pooler.supabase.com
       DB_NAME_PROD: postgres
-      DB_USER_PROD: postgres.kholsbroxuuibpidlzng
+      DB_USER_PROD: postgres.zirrhcafovsekawnupbp
       DB_PASSWORD_PROD: ${{ secrets.DB_PASSWORD }}
 
     steps:
