@@ -1,16 +1,18 @@
 {{ config(materialized='ephemeral') }}
 
-WITH aggregated_fixtures AS (
+-- 1. Gom nhóm toàn bộ dữ liệu trận đấu cào chi tiết theo (player_id, season)
+WITH fixtures_by_player_season AS (
     SELECT
         fp.player_id,
-        fp.team_id,
-        fp.league_id,
         fp.season,
-        fp.position AS games_position,
+        -- Ưu tiên CLB hợp lệ (có trong dim_teams và league_id != 1) và thi đấu nhiều phút nhất trong mùa
+        (ARRAY_AGG(fp.team_id ORDER BY (fp.league_id != 1 AND dt.team_id IS NOT NULL) DESC, fp.minutes_played DESC))[1] AS team_id,
+        (ARRAY_AGG(fp.league_id ORDER BY (fp.league_id != 1 AND dl.league_id IS NOT NULL) DESC, fp.minutes_played DESC))[1] AS league_id,
+        (ARRAY_AGG(fp.position ORDER BY (fp.league_id != 1) DESC, fp.minutes_played DESC))[1] AS games_position,
         COUNT(fp.fixture_id) AS games_appearances,
         SUM(CASE WHEN NOT fp.is_substitute THEN 1 ELSE 0 END) AS games_lineups,
         SUM(fp.minutes_played) AS games_minutes,
-        SUM(fp.rating * fp.minutes_played) AS total_rating_minutes, -- Phục vụ tính điểm trung bình có trọng số
+        SUM(fp.rating * fp.minutes_played) AS total_rating_minutes,
         SUM(fp.goals) AS goals_total,
         SUM(fp.assists) AS goals_assists,
         SUM(fp.shots_total) AS shots_total,
@@ -30,62 +32,66 @@ WITH aggregated_fixtures AS (
         SUM(fp.penalty_scored) AS penalty_scored,
         MAX(fp.extracted_at) AS last_updated
     FROM {{ ref('stg_fixture_players') }} fp
-    LEFT JOIN {{ ref('stg_player_statistics') }} ps 
-        ON fp.player_id = ps.player_id 
-        AND fp.team_id = ps.team_id 
-        AND fp.league_id = ps.league_id 
-        AND fp.season = ps.season
-    -- Neu cau thu chua co thong ke tong ket mua thi lay toan bo cac tran; neu da co thi chi cong don cac tran cao sau do
-    WHERE ps.extracted_at IS NULL OR fp.extracted_at > ps.extracted_at
-    GROUP BY fp.player_id, fp.team_id, fp.league_id, fp.season, fp.position
+    JOIN {{ ref('stg_players') }} p ON fp.player_id = p.player_id
+    LEFT JOIN {{ ref('stg_teams') }} dt ON fp.team_id = dt.team_id
+    LEFT JOIN {{ ref('stg_leagues') }} dl ON fp.league_id = dl.league_id
+    WHERE fp.player_id > 0
+    GROUP BY fp.player_id, fp.season
 ),
 
-seasonal_stats AS (
+-- 2. Gom nhóm toàn bộ dữ liệu tổng kết mùa gốc theo (player_id, season)
+seasonal_by_player_season AS (
     SELECT
-        player_id,
-        team_id,
-        league_id,
-        season,
-        games_position,
-        games_appearances,
-        games_lineups,
-        games_minutes,
-        games_rating,
-        goals_total,
-        goals_assists,
-        shots_total,
-        shots_on,
-        passes_total,
-        passes_key,
-        tackles_total,
-        tackles_interceptions,
-        duels_total,
-        duels_won,
-        dribbles_attempts,
-        dribbles_success,
-        fouls_drawn,
-        fouls_committed,
-        cards_yellow,
-        cards_red,
-        penalty_scored,
-        extracted_at AS last_updated
-    FROM {{ ref('stg_player_statistics') }}
+        ps.player_id,
+        ps.season,
+        -- Ưu tiên CLB hợp lệ (có trong dim_teams và league_id != 1) và thi đấu nhiều phút nhất trong mùa
+        (ARRAY_AGG(ps.team_id ORDER BY (ps.league_id != 1 AND dt.team_id IS NOT NULL) DESC, ps.games_minutes DESC))[1] AS team_id,
+        (ARRAY_AGG(ps.league_id ORDER BY (ps.league_id != 1 AND dl.league_id IS NOT NULL) DESC, ps.games_minutes DESC))[1] AS league_id,
+        (ARRAY_AGG(ps.games_position ORDER BY (ps.league_id != 1) DESC, ps.games_minutes DESC))[1] AS games_position,
+        SUM(ps.games_appearances) AS games_appearances,
+        SUM(ps.games_lineups) AS games_lineups,
+        SUM(ps.games_minutes) AS games_minutes,
+        SUM(ps.games_rating * ps.games_minutes) AS total_rating_minutes,
+        SUM(ps.goals_total) AS goals_total,
+        SUM(ps.goals_assists) AS goals_assists,
+        SUM(ps.shots_total) AS shots_total,
+        SUM(ps.shots_on) AS shots_on,
+        SUM(ps.passes_total) AS passes_total,
+        SUM(ps.passes_key) AS passes_key,
+        SUM(ps.tackles_total) AS tackles_total,
+        SUM(ps.tackles_interceptions) AS tackles_interceptions,
+        SUM(ps.duels_total) AS duels_total,
+        SUM(ps.duels_won) AS duels_won,
+        SUM(ps.dribbles_attempts) AS dribbles_attempts,
+        SUM(ps.dribbles_success) AS dribbles_success,
+        SUM(ps.fouls_drawn) AS fouls_drawn,
+        SUM(ps.fouls_committed) AS fouls_committed,
+        SUM(ps.cards_yellow) AS cards_yellow,
+        SUM(ps.cards_red) AS cards_red,
+        SUM(ps.penalty_scored) AS penalty_scored,
+        MAX(ps.extracted_at) AS last_updated
+    FROM {{ ref('stg_player_statistics') }} ps
+    LEFT JOIN {{ ref('stg_teams') }} dt ON ps.team_id = dt.team_id
+    LEFT JOIN {{ ref('stg_leagues') }} dl ON ps.league_id = dl.league_id
+    WHERE ps.player_id > 0
+    GROUP BY ps.player_id, ps.season
 )
 
+-- 3. Hợp nhất hai nguồn theo đúng 2 khóa cốt lõi (player_id, season)
 SELECT
     COALESCE(ss.player_id, af.player_id) AS player_id,
-    COALESCE(ss.team_id, af.team_id) AS team_id,
-    COALESCE(ss.league_id, af.league_id) AS league_id,
+    COALESCE(af.team_id, ss.team_id) AS team_id,
+    COALESCE(af.league_id, ss.league_id) AS league_id,
     COALESCE(ss.season, af.season) AS season,
-    COALESCE(ss.games_position, af.games_position) AS games_position,
+    COALESCE(af.games_position, ss.games_position) AS games_position,
     (COALESCE(ss.games_appearances, 0) + COALESCE(af.games_appearances, 0)) AS games_appearances,
     (COALESCE(ss.games_lineups, 0) + COALESCE(af.games_lineups, 0)) AS games_lineups,
     (COALESCE(ss.games_minutes, 0) + COALESCE(af.games_minutes, 0)) AS games_minutes,
-    -- Tính điểm trung bình cộng có trọng số dựa trên số phút đá thực tế
+    -- Điểm đánh giá trung bình có trọng số theo số phút thi đấu
     CASE 
         WHEN (COALESCE(ss.games_minutes, 0) + COALESCE(af.games_minutes, 0)) > 0 THEN
             ROUND(
-                ((COALESCE(ss.games_rating, 0.00) * COALESCE(ss.games_minutes, 0)) + COALESCE(af.total_rating_minutes, 0.00)) / 
+                ((COALESCE(ss.total_rating_minutes, 0.00)) + COALESCE(af.total_rating_minutes, 0.00)) / 
                 (COALESCE(ss.games_minutes, 0) + COALESCE(af.games_minutes, 0)), 
                 2
             )
@@ -109,9 +115,7 @@ SELECT
     (COALESCE(ss.cards_red, 0) + COALESCE(af.cards_red, 0)) AS cards_red,
     (COALESCE(ss.penalty_scored, 0) + COALESCE(af.penalty_scored, 0)) AS penalty_scored,
     COALESCE(af.last_updated, ss.last_updated) AS last_updated
-FROM seasonal_stats ss
-FULL OUTER JOIN aggregated_fixtures af 
+FROM seasonal_by_player_season ss
+FULL OUTER JOIN fixtures_by_player_season af 
     ON ss.player_id = af.player_id 
-    AND ss.team_id = af.team_id 
-    AND ss.league_id = af.league_id 
     AND ss.season = af.season
