@@ -30,13 +30,13 @@ WITH aggregated_fixtures AS (
         SUM(fp.penalty_scored) AS penalty_scored,
         MAX(fp.extracted_at) AS last_updated
     FROM {{ ref('stg_fixture_players') }} fp
-    JOIN {{ ref('stg_player_statistics') }} ps 
+    LEFT JOIN {{ ref('stg_player_statistics') }} ps 
         ON fp.player_id = ps.player_id 
         AND fp.team_id = ps.team_id 
         AND fp.league_id = ps.league_id 
         AND fp.season = ps.season
-    -- Chỉ cộng dồn các trận đấu cào sau thời điểm cào dữ liệu gốc của giải đấu để tránh trùng lặp
-    WHERE fp.extracted_at > ps.extracted_at
+    -- Neu cau thu chua co thong ke tong ket mua thi lay toan bo cac tran; neu da co thi chi cong don cac tran cao sau do
+    WHERE ps.extracted_at IS NULL OR fp.extracted_at > ps.extracted_at
     GROUP BY fp.player_id, fp.team_id, fp.league_id, fp.season, fp.position
 ),
 

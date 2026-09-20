@@ -94,7 +94,7 @@ def get_player_data(player_id: int):
         LEFT JOIN (
             SELECT DISTINCT ON (player_id) player_id, team_id
             FROM fact_player_statistics
-            ORDER BY player_id, season DESC
+            ORDER BY player_id, season DESC, (league_id != 1) DESC, games_appearances DESC
         ) last_team ON p.player_id = last_team.player_id
         LEFT JOIN dim_teams t ON last_team.team_id = t.team_id
         WHERE p.player_id = :player_id;
