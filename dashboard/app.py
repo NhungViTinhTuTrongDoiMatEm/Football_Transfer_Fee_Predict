@@ -21,9 +21,11 @@ def get_db_engine():
     db_name = os.getenv("DB_NAME", "football_db")
     db_user = os.getenv("DB_USER", "football_user")
     db_password = os.getenv("DB_PASSWORD", "football_pass")
+    db_sslmode = os.getenv("DB_SSLMODE", "")
     
-    connection_string = f"postgresql://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}"
-    return create_engine(connection_string)
+    ssl_param = f"?sslmode={db_sslmode}" if db_sslmode else ""
+    connection_string = f"postgresql://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}{ssl_param}"
+    return create_engine(connection_string, pool_pre_ping=True)
 
 engine = get_db_engine()
 

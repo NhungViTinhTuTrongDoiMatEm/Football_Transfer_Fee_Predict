@@ -100,11 +100,12 @@ services:
     container_name: football_dashboard
     restart: always
     environment:
-      DB_HOST: ${DB_HOST:-db}
-      DB_PORT: ${DB_PORT:-5432}
-      DB_NAME: ${DB_NAME:-football_db}
-      DB_USER: ${DB_USER:-football_user}
-      DB_PASSWORD: ${DB_PASSWORD:-football_pass}
+      DB_HOST: ${DB_HOST_PROD:-aws-0-ap-southeast-2.pooler.supabase.com}
+      DB_PORT: ${DB_PORT_PROD:-6543}
+      DB_NAME: ${DB_NAME_PROD:-postgres}
+      DB_USER: ${DB_USER_PROD:-postgres.zirrhcafovsekawnupbp}
+      DB_PASSWORD: ${DB_PASSWORD_PROD:-Kartrider8806}
+      DB_SSLMODE: require
     volumes:
       - ./dashboard:/app
       - ./ml_predictor:/app/ml_predictor
@@ -112,9 +113,6 @@ services:
     ports:
       - "8500:8500"
     command: bash -c "pip install -r requirements.txt && uvicorn app:app --host 0.0.0.0 --port 8500 --reload"
-    depends_on:
-      db:
-        condition: service_healthy
 
 volumes:
   postgres_data:
